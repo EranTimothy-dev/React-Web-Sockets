@@ -1,21 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import axios from 'axios';
+// export default App;
+import React, { useEffect, useState } from "react";
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
+import axios from 'axios'
 
-const WebSocketComponent = () => {
+function App() {
   const [message, setMessage] = useState('');
   const [logs, setLogs] = useState([]);
   const [ticketData, setTicketData] = useState({
-    totalTicketCount: 0,
-    ticketReleaseRate: 0,
-    customerRetrievalRate: 0,
-    maxTicketCapacity: 0,
-    numCustomers: 0,
+    totalTickets: "",
+    ticketReleaseRate: "",
+    customerRetreivalRate: "",
+    maxTicketCapacity: "",
+    customerCount: "",
   });
   const [simulationRunning, setSimulationRunning] = useState(false);
-  const [soldTickets, setSoldTickets] = useState(0);
-  const [availableTickets, setAvailableTickets] = useState(0);
 
   useEffect(() => {
     const socket = new SockJS('http://localhost:8080/ws');
@@ -29,12 +28,8 @@ const WebSocketComponent = () => {
           setMessage(message.body);
         });
 
-        stompClient.subscribe('/topic/tickets', (message) => {
-          const soldTicketCount = parseInt(message.body, 10); // Parse the sold tickets from the message
-          setSoldTickets(soldTicketCount);  // Update sold tickets state
-
-          // Calculate available tickets based on total tickets - sold tickets
-          setAvailableTickets(ticketData.totalTicketCount - soldTicketCount);
+        stompClient.subscribe('/topic/system-logs', (log) => {
+          setLogs((prevLogs) => [...prevLogs, log.body]);
         });
       },
       onStompError: (error) => {
@@ -61,11 +56,11 @@ const WebSocketComponent = () => {
   const startSimulation = async () => {
     try {
       const response = await axios.post('http://localhost:8080/ticketPool/startSimulation', ticketData);
-      console.log(ticketData.totalTicketCount);
-      console.log(ticketData.numCustomers);
+      console.log(ticketData.customerRetreivalRate);
       console.log(ticketData.maxTicketCapacity);
-      console.log(ticketData.customerRetrievalRate);
-      console.log(ticketData.ticketReleaseRate)
+      console.log(ticketData.customerCount);
+      console.log(ticketData.ticketReleaseRate);
+      console.log(ticketData.totalTickets);
       setSimulationRunning(true);
       setLogs((prevLogs) => [...prevLogs, 'Simulation Started...']);
     } catch (error) {
@@ -100,9 +95,10 @@ const WebSocketComponent = () => {
               <label>Total Ticket Count:</label>
               <input
                 type="number"
-                name="totalTicketCount"
+                // name="totalTicketCount"
+                name="totalTickets"
                 className="form-control"
-                value={ticketData.totalTicketCount}
+                value={ticketData.totalTickets}
                 onChange={handleInputChange}
                 required
               />
@@ -122,9 +118,9 @@ const WebSocketComponent = () => {
               <label>Customer Retrieval Rate (Seconds):</label>
               <input
                 type="number"
-                name="customerRetrievalRate"
+                name="customerRetreivalRate"
                 className="form-control"
-                value={ticketData.customerRetrievalRate}
+                value={ticketData.customerRetreivalRate}
                 onChange={handleInputChange}
                 required
               />
@@ -144,9 +140,10 @@ const WebSocketComponent = () => {
               <label>Number of Customers:</label>
               <input
                 type="number"
-                name="numCustomers"
+                // name="numCustomers"
+                name="customerCount"
                 className="form-control"
-                value={ticketData.numCustomers}
+                value={ticketData.customerCount}
                 onChange={handleInputChange}
                 required
               />
@@ -196,6 +193,7 @@ const WebSocketComponent = () => {
       </div>
     </div>
   );
-};
+}
 
-export default WebSocketComponent;
+
+export default App;

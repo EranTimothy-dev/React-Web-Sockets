@@ -71,11 +71,23 @@ const App = () => {
 
   let stompClient;
 
+  const requestBody = {
+    "totalTickets": 11,
+    "ticketReleaseRate": 2,
+    "customerRetreivalRate": 3,
+    "maxTicketCapacity": 5,
+    "customerCount": 2
+  }
+
   const startSimulation = async () => {
     try {
       // Call the backend API to start the ticketing simulation
-      const response = await fetch("http://localhost:8080/ticketingSystem/start-system", {
+      const response = await fetch("http://localhost:8080/ticketPool/startSimulation", {
         method: "POST",
+        header: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
       });
 
       if (response.ok) {
@@ -92,7 +104,7 @@ const App = () => {
   const stopSimulation = async () => {
     try {
       // Call the backend API to stop the ticketing simulation
-      const response = await fetch("http://localhost:8080/ticketingSystem/stop-system", {
+      const response = await fetch("http://localhost:8080/ticketPool/stopSimulation", {
         method: "POST",
       });
 
@@ -115,7 +127,7 @@ const App = () => {
         setIsConnected(true);
 
         // Subscribe to the topic
-        stompClient.subscribe("/topic/tickets", (message) => {
+        stompClient.subscribe("/topic/messages", (message) => {
           const messageBody = JSON.parse(message.body);
           setMessages((prevMessages) => [...prevMessages, messageBody]);
         });
